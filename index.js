@@ -2,12 +2,16 @@ const express = require('express');
 const app = express();
 const mongoose = require('mongoose');
 const cors = require('cors');
+const bodyParser = require('body-parser');
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+require('dotenv').config();
 
 
 app.use(cors())
 const port = process.env.PORT || 3001;
 
-mongoose.connect('mongodb+srv://aungminkhant:test123@cluster0.uatkvao.mongodb.net/?retryWrites=true&w=majority')
+mongoose.connect(`mongodb+srv://${process.env.USERNAME}:${process.env.PASSWORD}@cluster0.uatkvao.mongodb.net/?retryWrites=true&w=majority`)
     .then(result => console.log('Successfully connected to MongoDB'))
     .catch(err => console.log('Error connecting to MongoDB'))
 
@@ -26,18 +30,33 @@ app.listen(port, (req,res) => {
     console.log('Server is running on port',port);
 })
 
-app.get('/posts/:topic/', (req,res) => {
 
-    const topic = req.params.topic
+app.post('/posts/', (req,res) => {
+    const body = req.body;
+    const newPost = new Post({
+        image: body.image,
+        title: body.title,
+        topic: body.topic,
+        content: body.content
+    })
+    newPost.save()
+        .then(result => res.send('Post submitted'))
+        .catch(err => console.log('error saving post',err))
+})
+
+app.get('/posts/:topic', (req,res) => {
+
+    const topic = req.params.topic;
+
 
     let query = {};
     if (topic !== 'All') {
         query.topic = topic;
     }
-console.log(topic);
+
 
     Post.find(query)
         .then(result => res.json(result))
-        .catch(err => console.log('Error sending posts'))
+        .catch(err => console.log('Error fetching posts.'))
 })
 
