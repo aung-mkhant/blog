@@ -44,14 +44,21 @@ app.post('/posts/', (req,res) => {
         .catch(err => console.log('error saving post',err))
 })
 
-app.get('/posts/:topic', (req,res) => {
+app.get('/posts/:topic/:id?', (req,res) => {
 
     const topic = req.params.topic;
+    const id = req.params.id;
 
 
     let query = {};
     if (topic !== 'All') {
         query.topic = topic;
+    }
+
+    if (id) {
+        Post.findById(id)
+            .then(result => res.json(result))
+            .catch(err => console.log('Error finding post with that ID.'))
     }
 
 
